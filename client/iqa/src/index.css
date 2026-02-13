@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.card {
+  @apply p-6 rounded shadow text-center font-medium hover:shadow-lg transition;
+}
+
+.input {
+  @apply w-full border p-2 rounded;
+}
