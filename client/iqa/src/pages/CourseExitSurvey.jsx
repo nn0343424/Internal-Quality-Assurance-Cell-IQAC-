@@ -16,23 +16,30 @@ export default function CourseExitSurvey() {
     fetchFaculty();
   }, []);
 
+  // ✅ FIXED FUNCTION
   const fetchFaculty = async () => {
-    const res = await API.get("/public/faculty");
-    setFacultyList(res.data);
+    try {
+      const res = await API.get("/public/faculty"); // ✔ only once
+      setFacultyList(res.data);
+    } catch (err) {
+      console.error("Faculty fetch error:", err);
+      alert("Failed to load faculty");
+    }
   };
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (!form.facultyId) {
-      alert("Please select faculty");
-      return;
-    }
+  if (!form.facultyId) {
+    alert("Please select faculty");
+    return;
+  }
 
-    await API.post("/survey/course-exit", form);
+  try {
+    await API.post("/students/course-exit", form); // ✅ FIXED
     alert("Thank you for your feedback");
 
     setForm({
@@ -43,7 +50,11 @@ export default function CourseExitSurvey() {
       usefulness: "",
       overallSatisfaction: ""
     });
-  };
+  } catch (err) {
+    console.error("Submit error:", err);
+    alert("Submission failed");
+  }
+};
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -80,7 +91,13 @@ export default function CourseExitSurvey() {
           required
         />
 
-        <select name="clarity" className="input" onChange={handleChange} required>
+        <select
+  name="clarity"
+  className="input"
+  value={form.clarity}
+  onChange={handleChange}
+  required
+>
           <option value="">Content Clarity</option>
           <option value="1">1 - Very Poor</option>
           <option value="2">2 - Poor</option>
@@ -89,12 +106,7 @@ export default function CourseExitSurvey() {
           <option value="5">5 - Excellent</option>
         </select>
 
-        <select
-          name="syllabusCoverage"
-          className="input"
-          onChange={handleChange}
-          required
-        >
+        <select name="syllabusCoverage" className="input" value={form.syllabusCoverage} onChange={handleChange} required>
           <option value="">Syllabus Coverage</option>
           <option value="1">1</option>
           <option value="2">2</option>
@@ -103,12 +115,7 @@ export default function CourseExitSurvey() {
           <option value="5">5</option>
         </select>
 
-        <select
-          name="usefulness"
-          className="input"
-          onChange={handleChange}
-          required
-        >
+        <select name="usefulness" className="input" value={form.usefulness} onChange={handleChange} required>
           <option value="">Usefulness of Course</option>
           <option value="1">1</option>
           <option value="2">2</option>
@@ -117,12 +124,7 @@ export default function CourseExitSurvey() {
           <option value="5">5</option>
         </select>
 
-        <select
-          name="overallSatisfaction"
-          className="input"
-          onChange={handleChange}
-          required
-        >
+        <select name="overallSatisfaction" className="input" value={form.overallSatisfaction} onChange={handleChange} required>
           <option value="">Overall Satisfaction</option>
           <option value="1">1</option>
           <option value="2">2</option>

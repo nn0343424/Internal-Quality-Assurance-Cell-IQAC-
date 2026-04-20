@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import API from "../services/api";
 import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
@@ -14,19 +15,24 @@ export default function AdminUsers() {
     fetchFeedback();
   }, []);
 
-  // Fetch faculty & auditors
   const fetchUsers = async () => {
-    const res = await API.get("/admin/users");
-    setUsers(res.data);
+    try {
+      const res = await API.get("/admin/users");
+      setUsers(res.data);
+    } catch (err) {
+      toast.error("Failed to load users");
+    }
   };
 
-  // Fetch feedback summary
   const fetchFeedback = async () => {
-    const res = await API.get("/admin/feedback-summary");
-    setFeedback(res.data);
+    try {
+      const res = await API.get("/admin/feedback-summary");
+      setFeedback(res.data);
+    } catch (err) {
+      toast.error("Failed to load feedback");
+    }
   };
 
-  // Get feedback for a faculty
   const getFeedback = (facultyId) => {
     return feedback.find((f) => f._id === facultyId);
   };
@@ -36,164 +42,197 @@ export default function AdminUsers() {
   };
 
   const handleUpdate = async () => {
-    await API.put(`/admin/users/${editUser._id}`, editUser);
-    alert("User updated successfully");
-    setEditUser(null);
-    fetchUsers();
+    try {
+      await API.put(`/admin/users/${editUser._id}`, editUser);
+      toast.success("User updated successfully");
+      setEditUser(null);
+      fetchUsers();
+    } catch {
+      toast.error("Update failed");
+    }
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this user?")) return;
-    await API.delete(`/admin/users/${id}`);
-    fetchUsers();
+    if (!window.confirm("Delete this user?")) return;
+
+    try {
+      await API.delete(`/admin/users/${id}`);
+      toast.success("User deleted");
+      fetchUsers();
+    } catch {
+      toast.error("Delete failed");
+    }
   };
 
   return (
     <>
       <Navbar title="Manage Faculty & Auditors" />
 
-      <div className="p-8 bg-gray-100 min-h-screen">
-        <div className="max-w-7xl mx-auto bg-white p-6 rounded shadow">
+      <div className="p-6 bg-gray-100 min-h-screen">
 
-          <h2 className="text-xl font-semibold mb-4">
-            Faculty & Auditor Management
-          </h2>
+        <div className="max-w-7xl mx-auto bg-white rounded-xl shadow overflow-hidden">
 
-          <table className="w-full border text-sm">
-            <thead className="bg-gray-200">
-              <tr>
-                <th className="border p-2">Name</th>
-                <th className="border p-2">Email</th>
-                <th className="border p-2">Role</th>
-                <th className="border p-2">Department</th>
-                <th className="border p-2">Mobile</th>
-                <th className="border p-2">Responses</th>
-                <th className="border p-2">Avg Clarity</th>
-                <th className="border p-2">Avg Satisfaction</th>
-                <th className="border p-2">Actions</th>
-              </tr>
-            </thead>
+          {/* Header */}
+          <div className="p-5 border-b">
+            <h2 className="text-lg font-semibold text-gray-700">
+              Faculty & Auditor Management
+            </h2>
+          </div>
 
-            <tbody>
-              {users.map((u) => {
-                const fb = getFeedback(u._id);
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 text-gray-600">
+                <tr>
+                  <th className="p-3 text-left">Name</th>
+                  <th className="p-3 text-left">Email</th>
+                  <th className="p-3 text-left">Role</th>
+                  <th className="p-3 text-left">Department</th>
+                  <th className="p-3 text-left">Mobile</th>
+                  <th className="p-3 text-center">Responses</th>
+                  <th className="p-3 text-center">Clarity</th>
+                  <th className="p-3 text-center">Satisfaction</th>
+                  <th className="p-3 text-center">Actions</th>
+                </tr>
+              </thead>
 
-                return (
-                  <tr key={u._id}>
-                    <td className="border p-2">{u.name}</td>
-                    <td className="border p-2">{u.email}</td>
-                    <td className="border p-2 capitalize">{u.role}</td>
-                    <td className="border p-2">{u.department || "-"}</td>
-                    <td className="border p-2">{u.mobile || "-"}</td>
+              <tbody>
+                {users.map((u) => {
+                  const fb = getFeedback(u._id);
 
-                    <td className="border p-2 text-center">
-                      {fb ? fb.responses : 0}
-                    </td>
+                  return (
+                    <tr key={u._id} className="border-t hover:bg-gray-50 transition">
+                      <td className="p-3">{u.name}</td>
+                      <td className="p-3">{u.email}</td>
+                      <td className="p-3 capitalize">{u.role}</td>
+                      <td className="p-3">{u.department || "-"}</td>
+                      <td className="p-3">{u.mobile || "-"}</td>
 
-                    <td className="border p-2 text-center">
-                      {fb ? fb.avgClarity.toFixed(1) : "-"}
-                    </td>
+                      <td className="p-3 text-center">
+                        {fb ? fb.responses : 0}
+                      </td>
 
-                    <td className="border p-2 text-center">
-                      {fb ? fb.avgSatisfaction.toFixed(1) : "-"}
-                    </td>
+                      <td className="p-3 text-center">
+                        {fb ? fb.avgClarity.toFixed(1) : "-"}
+                      </td>
 
-                    <td className="border p-2 flex gap-2">
-                      <button
-                        onClick={() => setEditUser(u)}
-                        className="bg-blue-500 text-white px-2 py-1 rounded text-xs"
-                      >
-                        Edit
-                      </button>
+                      <td className="p-3 text-center">
+                        {fb ? fb.avgSatisfaction.toFixed(1) : "-"}
+                      </td>
 
-                      <button
-                        onClick={() => handleDelete(u._id)}
-                        className="bg-red-600 text-white px-2 py-1 rounded text-xs"
-                      >
-                        Delete
-                      </button>
+                      {/* Actions */}
+                      <td className="p-3 flex gap-2 justify-center">
 
-                      <button
-  onClick={() => navigate(`/admin/faculty/${u._id}`)}
-  className="bg-indigo-600 text-white px-2 py-1 rounded text-sm"
->
-  View
-</button>
+                        <button
+                          onClick={() => setEditUser(u)}
+                          className="px-3 py-1 text-xs font-medium bg-blue-500 text-white rounded hover:bg-blue-600"
+                        >
+                          Edit
+                        </button>
 
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                        <button
+                          onClick={() => handleDelete(u._id)}
+                          className="px-3 py-1 text-xs font-medium bg-red-600 text-white rounded hover:bg-red-700"
+                        >
+                          Delete
+                        </button>
 
+                        <button
+                          onClick={() => navigate(`/admin/faculty/${u._id}`)}
+                          className="px-3 py-1 text-xs font-medium bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                        >
+                          View
+                        </button>
 
-          {/* EDIT FORM */}
-          {editUser && (
-            <div className="mt-6 p-4 border rounded bg-gray-50">
-              <h3 className="font-semibold mb-3">Edit User</h3>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
 
-              <div className="grid grid-cols-2 gap-3">
+          {/* Empty State */}
+          {users.length === 0 && (
+            <div className="p-6 text-center text-gray-500">
+              No users found
+            </div>
+          )}
+
+        </div>
+
+        {/* Edit Modal */}
+        {editUser && (
+          <div className="fixed inset-0 bg-black/30 flex items-center justify-center">
+
+            <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-lg">
+
+              <h3 className="text-lg font-semibold mb-4">Edit User</h3>
+
+              <div className="grid grid-cols-2 gap-4">
+
                 <input
                   name="name"
                   value={editUser.name}
                   onChange={handleChange}
-                  className="input"
                   placeholder="Name"
+                  className="border p-2 rounded"
                 />
 
                 <input
                   name="email"
                   value={editUser.email}
                   onChange={handleChange}
-                  className="input"
                   placeholder="Email"
+                  className="border p-2 rounded"
                 />
 
                 <input
                   name="mobile"
                   value={editUser.mobile || ""}
                   onChange={handleChange}
-                  className="input"
                   placeholder="Mobile"
+                  className="border p-2 rounded"
                 />
 
                 <input
                   name="department"
                   value={editUser.department || ""}
                   onChange={handleChange}
-                  className="input"
                   placeholder="Department"
+                  className="border p-2 rounded"
                 />
 
                 <input
                   name="subject"
                   value={editUser.subject || ""}
                   onChange={handleChange}
-                  className="input"
                   placeholder="Subject"
+                  className="border p-2 rounded col-span-2"
                 />
+
               </div>
 
-              <div className="mt-4 flex gap-3">
-                <button
-                  onClick={handleUpdate}
-                  className="bg-green-600 text-white px-4 py-2 rounded"
-                >
-                  Save Changes
-                </button>
-
+              <div className="mt-5 flex justify-end gap-3">
                 <button
                   onClick={() => setEditUser(null)}
-                  className="bg-gray-400 text-white px-4 py-2 rounded"
+                  className="px-4 py-2 bg-gray-400 text-white rounded"
                 >
                   Cancel
                 </button>
-              </div>
-            </div>
-          )}
 
-        </div>
+                <button
+                  onClick={handleUpdate}
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                >
+                  Save Changes
+                </button>
+              </div>
+
+            </div>
+          </div>
+        )}
+
       </div>
     </>
   );

@@ -1,36 +1,42 @@
 const express = require("express");
+const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
-const router = express.Router();
-
-// Register (Admin use only)
-router.post("/register", async (req, res) => {
-  const user = new User(req.body);
-  await user.save();
-  res.json({ message: "User created" });
-});
-
-// Login
+// LOGIN
 router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-  const user = await User.findOne({ email });
-  if (!user) return res.status(400).json({ message: "User not found" });
+  try {
+    const { email, password } = req.body;
 
-  const match = await bcrypt.compare(password, user.password);
-  if (!match) return res.status(400).json({ message: "Wrong password" });
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
-  const token = jwt.sign(
-    { id: user._id, role: user.role },
-    process.env.JWT_SECRET
-  );
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
- res.json({
-  token,
-  role: user.role,
-  name: user.name
-});
+    // ✅ CREATE TOKEN
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      "secret123", // you can later move to .env
+      { expiresIn: "1d" }
+    );
+
+    // ✅ SEND TOKEN + DATA
+    res.json({
+      token,
+      role: user.role,
+      _id: user._id,
+      name: user.name
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;

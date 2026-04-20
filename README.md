@@ -1,34 +1,114 @@
-# Internal Quality Assurance Cell (IQAC) Management System
+# 📊 Internal Quality Assurance Cell (IQAC) Management System
 
-A MERN stack application designed to streamline internal quality assurance processes.
+A full-stack MERN application designed to streamline academic audit processes, faculty management, and institutional quality assurance workflows.
 
-##  Getting Started
+---
 
-Follow these instructions to get the project up and running on your local machine.
+## 🚀 Features
 
-### 1. Installation
-Clone the repository to your local machine:
+### 👨‍💼 Admin
+- Manage users (Faculty & Auditors)
+- Create announcements, events, timetable, academic calendar
+- View reports and audit summaries
+
+### 👨‍🏫 Faculty
+- Submit audit documents
+- View approval/rejection notifications
+- Manage personal and academic records
+
+### 🕵️ Auditor
+- Review faculty submissions
+- Approve / Reject with comments
+- Monitor audit activities
+
+### 🎓 Students
+- Submit Course Exit Survey (feedback system)
+
+### 🔔 Notifications System
+- Real-time alerts for:
+  - Document verification
+  - Announcements
+  - Events & timetable updates
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+- React.js
+- Axios
+- React Router DOM
+- Tailwind CSS
+- React Hot Toast
+
+### Backend
+- Node.js
+- Express.js
+- MongoDB (Mongoose)
+
+### Authentication & Security
+- JWT (jsonwebtoken)
+- bcryptjs
+
+### File Upload & Utilities
+- Cloudinary
+- Multer
+- dotenv
+
+---
+
+## 📁 Project Structure
+
+
+Internal-Quality-Assurance-Cell-IQAC-/
+│
+├── client/iqac # Frontend (React)
+└── server # Backend (Node.js + Express)
+
+
+---
+
+# ⚙️ SETUP INSTRUCTIONS
+
+---
+
+## 🔹 1. Clone Repository
+
 ```bash
-git clone 
+git clone <your-repo-link>
 cd Internal-Quality-Assurance-Cell-IQAC-
-# Navigate to the frontend folder
+🎨 FRONTEND SETUP
 cd client/iqac
-
-# Install dependencies
 npm install
-
-# Start the development server
+🔥 Install Required Dependencies
+npm install axios react-router-dom react-hot-toast
+▶️ Start Frontend
 npm start
 
+👉 Runs on:
+http://localhost:3000
 
-# Navigate to the server folder
+⚙️ BACKEND SETUP
 cd server
-
-# Install core dependencies
+npm install
+🔥 Install Required Packages
 npm install express mongoose cors dotenv
-
-# Install security and authentication packages
 npm install jsonwebtoken bcryptjs
+npm install cloudinary multer
+🔑 Environment Variables
 
-# Start the server
+Create a .env file inside server/:
+
+PORT=5000
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_secret_key
+
+# Cloudinary Config
+CLOUDINARY_CLOUD_NAME=your_name
+CLOUDINARY_API_KEY=your_key
+CLOUDINARY_API_SECRET=your_secret
+▶️ Start Backend
 node server.js
+
+👉 Runs on:
+http://localhost:5000

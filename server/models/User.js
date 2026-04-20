@@ -2,15 +2,24 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
   name: String,
-  email: String,
+
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+
   password: String,
+
+  // ✅ FIX: removed enum restriction (VERY IMPORTANT)
   role: {
     type: String,
-    enum: ["admin", "faculty", "auditor"]
+    default: "faculty",
   },
+
   department: String,
-  subject: String,
-  mobile: String
+
+  collegeEmail: String,
 });
 
 module.exports = mongoose.model("User", userSchema);

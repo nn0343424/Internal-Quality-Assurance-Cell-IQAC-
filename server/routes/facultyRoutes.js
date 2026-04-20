@@ -1,104 +1,97 @@
 const express = require("express");
-const auth = require("../middleware/authMiddleware");
-const role = require("../middleware/roleMiddleware");
+const router = express.Router();
+const multer = require("multer");
+const cloudinary = require("../config/cloudinary");
+const Document = require("../models/Document");
+const Research = require("../models/Research");
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
 
 const FacultyInfo = require("../models/FacultyInfo");
-const OddAudit = require("../models/OddAudit");
-const EvenAudit = require("../models/EvenAudit");
 const PersonalFile = require("../models/PersonalFile");
 
-const router = express.Router();
+// ✅ GET FACULTY INFO
+router.get("/info", async (req, res) => {
+  try {
+    const facultyId = req.user?.id || req.query.facultyId;
 
+    const data = await FacultyInfo.findOne({ faculty: facultyId });
 
-
-router.get("/info", auth, role("faculty"), async (req, res) => {
-  const info = await FacultyInfo.findOne({ facultyId: req.user.id });
-  res.json(info);
-});
-
-// UPDATE faculty info (edit profile)
-router.put("/info", auth, role("faculty"), async (req, res) => {
-  const updated = await FacultyInfo.findOneAndUpdate(
-    { facultyId: req.user.id },
-    req.body,
-    { new: true }
-  );
-  res.json(updated);
-});router.get("/info", auth, role("faculty"), async (req, res) => {
-  const info = await FacultyInfo.findOne({ facultyId: req.user.id });
-  res.json(info);
-});
-
-// UPDATE faculty info (edit profile)
-router.put("/info", auth, role("faculty"), async (req, res) => {
-  const updated = await FacultyInfo.findOneAndUpdate(
-    { facultyId: req.user.id },
-    req.body,
-    { new: true }
-  );
-  res.json(updated);
-});
-
-
-// Faculty Info
-router.post("/info", auth, role("faculty"), async (req, res) => {
-  const data = await FacultyInfo.create({
-    facultyId: req.user.id,
-    ...req.body,
-  });
-  res.json(data);
-});
-
-// Odd Semester
-// const upload = require("../middleware/upload");
-
-router.post(
-  "/odd",
-  auth,
-  role("faculty"),
-  // upload.single("proof"),
-  async (req, res) => {
-    const data = await OddAudit.create({
-      facultyId: req.user.id,
-      ...req.body,
-      proof: req.file?.filename,
-    });
     res.json(data);
-  },
-);
-
-// Even Semester
-router.post("/even", auth, role("faculty"), async (req, res) => {
-  const data = await EvenAudit.create({
-    facultyId: req.user.id,
-    ...req.body,
-  });
-  res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// Personal File
-router.post("/personal", auth, role("faculty"), async (req, res) => {
-  const data = await PersonalFile.create({
-    facultyId: req.user.id,
-    ...req.body,
-  });
-  res.json(data);
+// ✅ GET PERSONAL FILE
+router.get("/personal", async (req, res) => {
+  try {
+    const facultyId = req.user?.id || req.query.facultyId;
+
+    const data = await PersonalFile.findOne({ faculty: facultyId });
+
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+// ✅ REAL FILE UPLOAD
+router.post("/new-upload-document", upload.single("file"), async (req, res) => {
+  try {
+    const { facultyId, department, documentType } = req.body;
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    // upload to cloudinary
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+  { resource_type: "raw" },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      stream.end(req.file.buffer);
+    });
+
+    const doc = await Document.create({
+      faculty: facultyId,
+      department: department.trim().toUpperCase(),
+      documentType,
+      fileUrl: result.secure_url,
+      publicId: result.public_id,
+    });
+
+    res.json(doc);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+router.get("/my-documents/:facultyId", async (req, res) => {
+  try {
+    const docs = await Document.find({
+      faculty: req.params.facultyId
+    }).sort({ uploadedAt: -1 });
+
+    res.json(docs);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-router.get("/personal", auth, role("faculty"), async (req, res) => {
-  const file = await PersonalFile.findOne({ facultyId: req.user.id });
-  res.json(file);
+// keep research as is
+router.post("/new-research", async (req, res) => {
+  try {
+    const data = await Research.create(req.body);
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
-
-// UPDATE personal file
-router.put("/personal", auth, role("faculty"), async (req, res) => {
-  const updated = await PersonalFile.findOneAndUpdate(
-    { facultyId: req.user.id },
-    req.body,
-    { new: true }
-  );
-  res.json(updated);
-});
-
 
 module.exports = router;

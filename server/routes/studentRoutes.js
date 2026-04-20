@@ -1,9 +1,19 @@
-  const express = require("express");
-  const CourseExitSurvey = require("../models/CourseExitSurvey");
+const express = require("express");
+const router = express.Router();
+const Timetable = require("../models/Timetable");
+const AcademicCalendar = require("../models/AcademicCalendar");
+const CourseExitSurvey = require("../models/CourseExitSurvey");
+// View timetable
+router.get("/timetable", async (req, res) => {
+  const data = await Timetable.find();
+  res.json(data);
+});
 
-  const router = express.Router();
-
-
+// View academic calendar
+router.get("/calendar", async (req, res) => {
+  const data = await AcademicCalendar.find();
+  res.json(data);
+});
 router.post("/course-exit", async (req, res) => {
   try {
     const {
@@ -47,6 +57,4 @@ router.post("/course-exit", async (req, res) => {
     res.status(500).json({ message: "Submission failed", error: err.message });
   }
 });
-
-
-  module.exports = router;
+module.exports = router;

@@ -12,9 +12,11 @@ export default function Login() {
     
     try {
       const res = await API.post("/auth/login", { email, password });
+      console.log("LOGIN RESPONSE:", res.data);
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("role", res.data.role);
-      localStorage.setItem("name", res.data.name);
+localStorage.setItem("role", res.data.role);
+localStorage.setItem("userId", res.data._id);
+
 
       if (res.data.role === "faculty") window.location = "/faculty";
       if (res.data.role === "auditor") window.location = "/auditor";
@@ -142,5 +144,6 @@ export default function Login() {
         </div>
       </div>
     </div>
+    
   );
 }

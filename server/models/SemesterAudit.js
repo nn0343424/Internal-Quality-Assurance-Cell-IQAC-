@@ -4,22 +4,17 @@ const semesterAuditSchema = new mongoose.Schema({
   facultyId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true
+    required: true,
   },
 
-  academicYear: {
+  semester: {   // ✅ NEW
     type: String,
-    required: true
+    required: true,
   },
 
-  semesterType: {
-    type: String,
-    enum: ["ODD", "EVEN"],
-    required: true
-  },
+  academicYear: String,
 
-  // Checklist
-  coursePlan: String,              // Yes / No / NA
+  coursePlan: String,
   academicCalendar: String,
   studentList: String,
   timetable: String,
@@ -28,29 +23,11 @@ const semesterAuditSchema = new mongoose.Schema({
   questionBank: String,
   attendance: String,
   internalAssessment: String,
-
-  // Outcome & Analysis
   courseOutcomesDefined: String,
   coPoMapping: String,
   resultAnalysis: String,
   gapAnalysis: String,
-
-  // Remarks
-  facultyRemarks: {
-    type: String,
-    default: ""
-  },
-
-  auditorRemarks: {
-    type: String,
-    default: ""
-  },
-
-  finalStatus: {
-    type: String,
-    enum: ["Pending", "Approved", "Needs Correction"],
-    default: "Pending"
-  }
+  facultyRemarks: String,
 
 }, { timestamps: true });
 

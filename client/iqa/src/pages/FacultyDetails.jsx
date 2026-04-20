@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import API from "../services/api";
 import Navbar from "../components/Navbar";
+import toast from "react-hot-toast";
 
 export default function FacultyDetails() {
   const { id } = useParams();
@@ -9,86 +10,109 @@ export default function FacultyDetails() {
   const [info, setInfo] = useState(null);
   const [personal, setPersonal] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   useEffect(() => {
+    fetchDetails();
+  }, [id]);
+
   const fetchDetails = async () => {
     try {
       setLoading(true);
-      setError("");
 
-      const infoRes = await API.get(`/admin/faculty/${id}/info`);
-      const personalRes = await API.get(`/admin/faculty/${id}/personal`);
+      const [infoRes, personalRes] = await Promise.all([
+        API.get(`/admin/faculty/${id}/info`),
+        API.get(`/admin/faculty/${id}/personal`)
+      ]);
 
       setInfo(infoRes.data);
       setPersonal(personalRes.data);
 
     } catch (err) {
       console.error(err);
-      setError("Unable to load faculty details. Please refresh.");
+      toast.error("Failed to load faculty details");
     } finally {
       setLoading(false);
     }
   };
 
-  fetchDetails();
-}, [id]);
-
-  if (loading) {
-    return (
-      <>
-        <Navbar title="Faculty Details" />
-        <div className="p-8 text-center">Loading faculty details...</div>
-      </>
-    );
-  }
-
-  if (error) {
-    return (
-      <>
-        <Navbar title="Faculty Details" />
-        <div className="p-8 text-center text-red-600">{error}</div>
-      </>
-    );
-  }
-
   return (
     <>
       <Navbar title="Faculty Details" />
 
-      <div className="p-8 bg-gray-100 min-h-screen">
-        <div className="bg-white p-6 rounded shadow space-y-6">
+      <div className="p-6 bg-gray-100 min-h-screen">
 
-          <div>
-            <h2 className="text-xl font-semibold mb-2">Faculty Info</h2>
-            {info ? (
-              <>
-                <p><b>Designation:</b> {info.designation || "-"}</p>
-                <p><b>Department:</b> {info.department || "-"}</p>
-                <p><b>Appointment:</b> {info.appointmentType || "-"}</p>
-                <p><b>Courses:</b> {info.coursesHandled || "-"}</p>
-              </>
-            ) : (
-              <p className="text-gray-500">Faculty info not submitted.</p>
-            )}
+        {loading ? (
+          <div className="text-center py-20 text-gray-600">
+            Loading faculty details...
           </div>
+        ) : (
+          <div className="max-w-5xl mx-auto space-y-6">
 
-          <div>
-            <h2 className="text-xl font-semibold mb-2">Personal File</h2>
-            {personal ? (
-              <>
-                <p><b>Qualification:</b> {personal.highestQualification || "-"}</p>
-                <p><b>Specialization:</b> {personal.specialization || "-"}</p>
-                <p><b>Teaching Experience:</b> {personal.teachingExperience || 0} years</p>
-                <p><b>Publications:</b> {personal.publicationsCount || 0}</p>
-              </>
-            ) : (
-              <p className="text-gray-500">Personal file not submitted.</p>
-            )}
+            {/* Faculty Info */}
+            <div className="bg-white rounded-xl shadow p-6">
+              <h2 className="text-lg font-semibold mb-4 text-gray-700">
+                Faculty Information
+              </h2>
+
+              {info ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <Info label="Designation" value={info.designation} />
+                  <Info label="Department" value={info.department} />
+                  <Info label="Appointment Type" value={info.appointmentType} />
+                  <Info label="Courses Handled" value={info.coursesHandled} />
+                </div>
+              ) : (
+                <Empty message="Faculty info not submitted" />
+              )}
+            </div>
+
+            {/* Personal File */}
+            <div className="bg-white rounded-xl shadow p-6">
+              <h2 className="text-lg font-semibold mb-4 text-gray-700">
+                Personal File
+              </h2>
+
+              {personal ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <Info label="Qualification" value={personal.highestQualification} />
+                  <Info label="Specialization" value={personal.specialization} />
+                  <Info
+                    label="Teaching Experience"
+                    value={`${personal.teachingExperience || 0} years`}
+                  />
+                  <Info
+                    label="Publications"
+                    value={personal.publicationsCount || 0}
+                  />
+                </div>
+              ) : (
+                <Empty message="Personal file not submitted" />
+              )}
+            </div>
+
           </div>
+        )}
 
-        </div>
       </div>
     </>
+  );
+}
+
+/* 🔹 Reusable Components */
+
+function Info({ label, value }) {
+  return (
+    <div className="bg-gray-50 p-3 rounded">
+      <p className="text-gray-500 text-xs">{label}</p>
+      <p className="font-medium text-gray-800">{value || "-"}</p>
+    </div>
+  );
+}
+
+function Empty({ message }) {
+  return (
+    <div className="text-gray-500 text-sm text-center py-6">
+      {message}
+    </div>
   );
 }
