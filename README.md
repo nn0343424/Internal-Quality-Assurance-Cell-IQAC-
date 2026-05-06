@@ -112,3 +112,35 @@ node server.js
 
 👉 Runs on:
 http://localhost:5000
+
+---
+
+# 👨‍💼 Admin Registration (First Time Setup)
+
+After starting the backend server, create the first admin user using Postman.
+
+## ✅ Steps
+
+1. Open Postman
+2. Create a new request
+3. Select method as `POST`
+4. Enter the URL:
+
+```http
+http://localhost:5000/api/auth/register
+
+Body → raw → JSON
+
+{
+  "name": "Admin",
+  "email": "admin@iqac.com",
+  "password": "admin123",
+  "role": "admin"
+}
+
+Click Send
+
+After registration, login using:
+
+Email: admin@iqac.com
+Password: admin123
